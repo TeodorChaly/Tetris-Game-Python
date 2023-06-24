@@ -4,6 +4,26 @@ import sys, subprocess
 import time
 from pytimedinput import timedInput
 
+def next_figure_fun(next_figure):
+    if next_figure == "Z-l":
+        draw = "[]\n[] []\n   []"
+
+    elif next_figure == "Z-r":
+        draw = "   []\n[] []\n[] "
+    elif next_figure == "C":
+        draw = "[] []\n[] []"
+    elif next_figure == "I":
+        draw = "[] [] [] []"
+    elif next_figure == "T":
+        draw = "[] [] []\n   []"
+    elif next_figure == "G-l":
+        draw = "[] []\n[]\n[]"
+    elif next_figure == "G-r":
+        draw = "[] []\n   []\n   []"
+    else:
+        draw = ""
+    return draw
+
 
 def field_strike_checker(saver_field):
     global points, HEIGHT
@@ -77,10 +97,8 @@ def action_checker(button, cords, type_figure, field, position_type):
                         if cord_1 >= HEIGHT - 1 or field[cord_1 + 1][cord_1_1 + 1] == 1 or field[cord_3 - 1][
                             cord_3_1 - 1] == 1 or field[cord_4 - 2][cord_4_1 - 2] == 1:
 
-                            print("1")
                             return False, 0, "I-0"
                         else:
-                            print("2")
                             cord_1, cord_1_1 = cord_1 + 1, cord_1_1 + 1
                             cord_2, cord_2_1 = cord_2, cord_2_1
                             cord_3, cord_3_1 = cord_3 - 1, cord_3_1 - 1
@@ -89,19 +107,16 @@ def action_checker(button, cords, type_figure, field, position_type):
                     elif position_type == "I-1":
                         if cord_4 >= HEIGHT - 1 or field[cord_1 - 2][cord_1_1 - 1] == 1 or field[cord_2 - 1][
                             cord_2_1] == 1 or field[cord_3][cord_3_1 + 1] == 1 or field[cord_4 + 1][cord_4_1 + 2] == 1:
-                            print("3")
                             return False, 0, "I-1"
                         else:
                             cord_1, cord_1_1 = cord_1 - 2, cord_1_1 - 1
                             cord_2, cord_2_1 = cord_2 - 1, cord_2_1
                             cord_3, cord_3_1 = cord_3, cord_3_1 + 1
                             cord_4, cord_4_1 = cord_4 + 1, cord_4_1 + 2
-                            print("4")
                             return True, 0, "I-2"
                     elif position_type == "I-2":  # Checker
                         if field[cord_1 - 2][cord_1_1 + 2] == 1 or field[cord_2 - 1][cord_2_1 + 1] == 1 or \
                                 field[cord_4 + 1][cord_4_1 - 1] == 1:
-                            print("5")
                             return False, 0, "I-2"
                         else:
                             cord_1, cord_1_1 = cord_1 - 2, cord_1_1 + 2
@@ -307,7 +322,6 @@ def action_checker(button, cords, type_figure, field, position_type):
         if type_figure == "C":
             return False, 0, "C"
 
-
         time.sleep(3)
 
         # change()
@@ -320,24 +334,49 @@ def main():
     global HEIGHT, points
     field = [[0 for _ in range(10)] for _ in range(15)]
     HEIGHT = 15
-    points = 11
-    list_of_figures = [ "G-l", "G-r", "Z-l", "Z-r", "C", "T", "I"]#  "I",
+    points = 0
+    list_of_figures = ["G-l", "G-r", "Z-l", "Z-r", "C", "T", "I"]  # "I",
+    random_figure = random.choice(list_of_figures)
+    random_figure_2 = random.choice(list_of_figures)
+    random_figure_3 = random.choice(list_of_figures)
     while True:
-        random_figure = random.choice(list_of_figures)
-        new_field = run_game(HEIGHT, field, random_figure)
-        if not new_field:
+        next_figure = [random_figure, random_figure_2, random_figure_3]
+        field_1 = run_game(HEIGHT, field, random_figure, next_figure)
+        if not field_1:
             print(f"The end. Your score:{points}")
             break
         random_figure = random.choice(list_of_figures)
-        field = run_game(HEIGHT, new_field, random_figure)
+        next_figure = [random_figure_2, random_figure_3, random_figure]
+
+        field_2 = run_game(HEIGHT, field_1, random_figure_2, next_figure)
+        if not field_2:
+            print(f"The end. Your score:{points}")
+            break
+        random_figure_2 = random.choice(list_of_figures)
+        next_figure = [random_figure_3, random_figure, random_figure_2]
+        field = run_game(HEIGHT, field_2, random_figure_3, next_figure)
         if not field:
             print(f"The end. Your score:{points}")
             break
 
-def run_game(HEIGHT, field, type_figure):
+        # new_field = run_game(HEIGHT, field, random_figure)
+        #
+        #
+        # if not new_field:
+        #     print(f"The end. Your score:{points}")
+        #     break
+        #
+        # field = run_game(HEIGHT, new_field, random_figure_2)
+        # if not field:
+        #     print(f"The end. Your score:{points}")
+        #     break
+
+
+def run_game(HEIGHT, field, type_figure, next_figure):
     global position_type, cord_1, cord_1_1, cord_2, cord_2_1, cord_3, cord_3_1, cord_4, cord_4_1, points
     next_is_break = False
     saver_field = []
+    action_list = []
     move = False
     if type_figure == "Z-r":
         position_type = "Z-r-0"
@@ -362,7 +401,7 @@ def run_game(HEIGHT, field, type_figure):
         cord_1, cord_1_1, cord_2, cord_2_1, cord_3, cord_3_1, cord_4, cord_4_1 = 0, 4, 0, 5, 1, 4, 1, 5
     stop = False
     unlow_move = True
-    for i in range(HEIGHT+1):
+    for i in range(HEIGHT + 1):
         os.system('cls')
         counter = 0
         if not next_is_break:
@@ -377,9 +416,12 @@ def run_game(HEIGHT, field, type_figure):
 
                 cords = [{cord_1: cord_1_1}, {cord_2: cord_2_1}, {cord_3: cord_3_1}, {cord_4: cord_4_1}]
                 if move and unlow_move:
-
-                    check, action, position_type = action_checker(button, cords, type_figure, field, position_type)
-
+                    if len(action_list) == 0:
+                        check, action, position_type = action_checker(button, cords, type_figure, field, position_type)
+                    else:
+                        for i in action_list:
+                            check, action, position_type = action_checker(i, cords, type_figure, field, position_type)
+                        action_list = []
 
                     if check:
                         if action == -10:
@@ -410,7 +452,6 @@ def run_game(HEIGHT, field, type_figure):
                                 break
 
                 # Printing file
-
 
                 for i3 in i2:
                     if i3 == 0:
@@ -459,17 +500,43 @@ def run_game(HEIGHT, field, type_figure):
                 os.system('cls')  # cls
 
                 break
+        if not stop:
+            print("Next figure will be:\n")
+            print("1.")
+            print(next_figure_fun(next_figure[1]))
+            print()
+            print("2.")
+            print(next_figure_fun(next_figure[2]))
 
         cord_1 += 1
         cord_2 += 1
         cord_3 += 1
         cord_4 += 1
         if unlow_move:
-            if points <= 1:
-                button, _ = timedInput("", timeout=0.8)
+            if points <= 5:
+                button, _ = timedInput("", timeout=0.55)
+            elif points <= 15:
+                button, _ = timedInput("", timeout=0.35)
+            elif points <= 25:
+                button, _ = timedInput("", timeout=0.2)
             else:
-                button, _ = timedInput("", timeout=0.5)
+                button, _ = timedInput("", timeout=0.1)
 
+            if button == "aaa" or button == "aa" or button == "aaaa":
+                button = "a"
+                move = True
+            if button == "ddd" or button == "dd" or button == "dddd":
+                button = "d"
+                move = True
+
+            if button == " a":
+                move = True
+                action_list.append(" ")
+                action_list.append("a")
+            elif button == " d":
+                move = True
+                action_list.append(" ")
+                action_list.append("d")
             if button == "a" or button == " " or button == "s" or button == "d":
                 move = True
     if stop:
